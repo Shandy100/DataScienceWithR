@@ -1,0 +1,55 @@
+Reg.No_Name_sec
+http://www.endmemo.com/r/gsub.php
+
+#Lets collect data
+library(rvest)
+library(robotstxt)
+library(dplyr)
+path<-paths_allowed("https://www.imdb.com/search/title/?groups=top_250&sort=user_rating")
+link<-"https://www.imdb.com/search/title/?groups=top_250&sort=user_rating"
+web<-read_html(link)
+Name<-web%>%html_nodes(".lister-item-header a")%>%html_text()
+year<-web%>%html_nodes(".text-muted.unbold")%>%html_text()
+duration<-web%>%html_nodes(".runtime")%>%html_text()
+rating<-web%>%html_nodes(".ratings-imdb-rating strong")%>%html_text()
+
+str(imdb.ratings)
+# Remove special characters
+imdb.ratings$year <-gsub("\\(|\\)", "", imdb.ratings$year)
+View(imdb.ratings)
+imdb.ratings$duration <-gsub("min","",imdb.ratings$duration)
+View(imdb.ratings)
+imdb.ratings$Name<-as.character(imdb.ratings$Name)
+imdb.ratings$year<-as.numeric(imdb.ratings$year)
+imdb.ratings$duration<-as.numeric(imdb.ratings$duration)
+imdb.ratings$rating<-as.numeric(as.character(imdb.ratings$rating))
+View(imdb.ratings)
+str(imdb.ratings)
+imdb.ratings$Rank<-c(1:50)
+
+View(imdb.ratings)
+imdb.ratings<-imdb.ratings[c("Rank","Name","year","duration","rating")]
+View(imdb.ratings)
+#Gross_collected
+set.seed(123)
+imdb.ratings$Gross_dollars<-runif(50,min = 10000000, max = 1000000000)
+View(imdb.ratings)
+imdb.ratings[2,6]<-NA
+imdb.ratings[17,6]<-NA
+imdb.ratings[36,6]<-NA
+View(imdb.ratings)
+
+imdb.ratings$Gross_dollars=ifelse(is.na(imdb.ratings$Gross_dollars),
+                                  ave(imdb.ratings$Gross_dollars,FUN=function(x) mean(x,na.rm=TRUE)),
+                                  imdb.ratings$Gross_dollars)
+View(imdb.ratings)
+
+imdb.ratings$Movie_list<-imdb.ratings$rating>8.6
+View(imdb.ratings)
+str(imdb.ratings)
+
+imdb.ratings$Movie_list<-as.factor(imdb.ratings$Movie_list)
+imdb.ratings$Movie_list<-factor(imdb.ratings$Movie_list,
+                                levels=c("TRUE","FALSE"),
+                                labels = c(0,1))
+View(imdb.ratings)
