@@ -1,0 +1,126 @@
+---
+title: "DailyExpenses"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(ggplot2)
+DE<-read.csv("dailyexpenses.csv")
+DE$Date<-as.Date(DE$Date,"%d/%m/%Y")
+pc<-read.csv("piechart.csv")
+```
+
+# Overall Expenses
+
+## Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Minimum Expense
+
+```{r}
+tot <- DE[,2:9]
+total<- colSums(tot)
+
+minvalue <- min(total)
+valueBox(minvalue)
+```
+
+### Maximum Expense
+
+```{r}
+maxvalue <- max(total)
+valueBox(maxvalue)
+```
+
+## Column {data-width=650}
+
+### Pie Chart of Expenses
+
+
+```{r}
+pie <-  ggplot(pc, aes(x = "", y=amount, fill = factor(expense))) +
+  geom_bar(width = 1, stat ="identity")+
+  labs(fill="expense",
+       x=NULL, y=NULL, title="Pie Chart of expenses")
+
+pie + coord_polar(theta = "y", start = 0)
+
+```
+
+# Comparing Overall Expenses-2
+
+## Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Comparing Expenses
+
+```{r}
+tot <- DE[,2:9]
+total<- colSums(tot)
+detail <- c("food", "groceries", "medical", "fuel", "toll", "phone", "electricity", "miscellaneous")
+df <- data.frame(detail, total)
+
+ggplot(data = df, aes(x = detail, y = total)) +
+  geom_bar(stat = "identity", fill = "purple")+
+  labs(x = "Items",
+       y = "Expenses",
+       title = "Comparing Expenses")
+
+```
+
+## Column {data-width=500}
+
+### Total Expenses
+
+```{r}
+cm <- DE[,2:9]
+dt <- DE[,1]
+
+rs<- rowSums(cm)
+#cs<-colSums(cm)
+#View(cs)
+
+dg <-data.frame(dt,rs)
+
+ggplot(data = dg, aes(x = dt, y = rs,group=1))+
+  geom_line(color = "#00AFBB", size = 2)+
+  labs(x = "Date",
+       y = "Expenses",
+       title = "Total Expenses")
+
+```
+
+# Comparison Medical Expenses
+
+## Column {data-width=500}
+
+### Medical expenses
+
+```{r}
+md <- DE[,3]
+de <- DE[,1]
+dm <- data.frame(de,md)
+
+ggplot(data = dm, aes(x = de, y = md)) +
+  geom_point(color="blue",size=4) +
+  labs(x = "Expenses",
+       y = "Medical",
+       title = "Medical Expenses")
+
+```
+
+## Column {data-width=500}
+
+### Pie Chart of Expenses
+
+```{r}
+ggplot(DE, aes(x= Medical)) + 
+  geom_histogram(binwidth = 5, color = "black", fill = "blue")
+
+```
+
