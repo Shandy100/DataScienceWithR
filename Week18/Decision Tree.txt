@@ -1,0 +1,29 @@
+# Decision Tree Classification
+#1. Import the dataset
+#Use Import dataset
+Dataset=student_dataset[2:6]
+View(Dataset)
+
+Dataset$certificate<-as.factor(Dataset$certificate)
+print(levels(Dataset$certificate))
+
+library(caTools)
+set.seed(123)
+
+split=sample.split(Dataset$certificate,SplitRatio = 0.75)
+View(split)
+
+split=sample.split(Dataset$certificate,SplitRatio = 0.75)
+View(split)
+training_set=subset(Dataset,split==TRUE)
+test_set=subset(Dataset,split==FALSE)
+
+View(training_set)
+View(testing_set)
+
+install.packages("rpart")
+library(rpart)
+
+classifier = rpart(formula = certificate ~ ., data = training_set)
+
+y_pred = predict(classifier, newdata = test_set, type = 'class')

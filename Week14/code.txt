@@ -1,0 +1,44 @@
+library(modeest) 
+library(modest)
+library(ggplot2)
+library(moments) 
+library(bayestestR)
+library(dplyr)
+library("MASS")
+
+neo <- read.csv("neo.csv")
+#Cleaning the data
+neo$Object <- gsub("\\(|\\)","", neo$Object)
+neo$CA.Date<- as.Date(neo$CA.Date, "%d-%m-%y")
+
+# Z-Test
+
+scores <- sd(neo$Estimated.Diameter.maximum..m.)*sqrt((length(neo$Estimated.Diameter.maximum..m.)-1)/(length(neo$Estimated.Diameter.maximum..m.)))
+diamean <- mean(neo$Estimated.Diameter.maximum..m.)
+
+#Finding T test two sided
+t.test(neo$CA.Distance.Nominal..au., mu=1.3,alternative="two.sided")
+#Finding T test one sided
+t.test(neo$CA.Distance.Nominal..au.)
+
+#chi square test
+neo.data <- data.frame(neo$Estimated.Diameter.minimum..m., neo$Estimated.Diameter.maximum..m.)
+
+# Perform the Chi-Square test.
+print(chisq.test(neo.data))
+
+#performing correlation test
+cor.test(neo$CA.Distance.Minimum..au., neo$Estimated.Diameter.maximum..m., 
+         method = "pearson")
+
+# Create a contigency table with the needed variables.
+neo.data = table(neo$CA.Distance.Minimum..au., neo$Estimated.Diameter.maximum..m.)
+hist(neo.data)
+
+#Performing ANOVA test
+#One way test
+
+anotest <- aov(neo$CA.Distance.Minimum..au.~neo$CA.Distance.Nominal..au., data=neo)
+summary(anotest)
+
+anotest2 <-aov(neo$CA.Distance.Minimum..au.~neo$CA.Distance.Nominal..au. + neo$Estimated.Diameter.minimum..m., data=neo)

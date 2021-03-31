@@ -1,0 +1,114 @@
+---
+title: "Covid Cases in India"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(ggplot2)
+library(RColorBrewer)
+library(ggmap)
+library(maps)
+library(rgdal)
+library(scales)
+library(maptools)
+library(gridExtra)
+library(rgeos)
+library(mapproj)
+library(dplyr)
+
+ci<-read.csv("coronaIndia.csv")
+
+ci$confirmed<-as.numeric(ci$confirmed)
+ci$cured<-as.numeric(ci$cured)
+ci$death<-as.numeric(ci$death)
+covidrow <- ci[,3:5]
+
+r1 <- rowSums(covidrow)
+c1 <- colSums(covidrow)
+
+conf <- sum(ci[,3])
+cur <-sum(ci[,4])
+dt <-sum(ci[,5])
+
+covidind<-read.csv("coronaIndia.csv")
+covidind$confirmed<-as.numeric(covidind$confirmed)
+covidind$cured<-as.numeric(covidind$cured)
+covidind$death<-as.numeric(covidind$death)
+states_shape = readShapeSpatial("IND_adm1.shp")
+class(states_shape)
+names(states_shape)
+print(states_shape$ID_1)
+print(states_shape$NAME_1)
+plot(states_shape)
+set.seed(100)
+State_count = length(states_shape$NAME_1)
+score <- covidind$cured
+State_data = data.frame(id=states_shape$ID_1, NAME_1=states_shape$NAME_1, score)
+
+
+fortify_shape = fortify(states_shape, region = "ID_1")
+class(fortify_shape)
+
+Merged_data = merge(fortify_shape, State_data, by="id", all.x=TRUE)
+Map_plot = Merged_data[order(Merged_data$order), ]
+
+```
+Column {data-width=150}
+-----------------------------------------------------------------------
+### CONFIRMED CASES
+```{r}
+valueBox(conf)
+```
+
+### CURED CASES
+```{r}
+valueBox(cur)
+```
+
+### DEATH CASES
+
+```{r}
+valueBox(dt)
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### CONFIRMED STATES
+
+```{r}
+ggplot() +
+  geom_polygon(data = Map_plot,
+               aes(x = long, y = lat, group = group, fill = score),
+               color = "black", size = 0.5) +
+  coord_map()
+
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### CONFIRMED CASES
+
+```{r}
+ggplot(data = ci, aes(x = states, y = confirmed)) +
+  geom_bar(stat = "identity", fill = "blue")+coord_flip()+
+  labs(x = "States",
+       y = "Confirmed",
+       title = "Comparing Confirmed cases")
+```
+
+### DEATH CASES
+
+```{r}
+ggplot(data = ci, aes(x = states, y = death)) +
+  geom_bar(stat = "identity", fill = "purple")+coord_flip()+
+  labs(x = "States",
+       y = "Death",
+       title = "Comparing Death cases")
+```
+

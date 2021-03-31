@@ -1,0 +1,73 @@
+library(ggplot2)
+library(RColorBrewer)
+library(ggmap)
+library(maps)
+library(rgdal)
+library(scales)
+library(maptools)
+library(gridExtra)
+library(rgeos)
+library(mapproj)
+library(dplyr)
+
+ci <- read.csv("coronaIndia.csv")
+
+ci$confirmed<-as.numeric(ci$confirmed)
+ci$cured<-as.numeric(ci$cured)
+ci$death<-as.numeric(ci$death)
+
+confirm <- sum(ci[,3])
+cur <-sum(ci[,4])
+dt <-sum(ci[,5])
+
+
+## Column {data-width=150}
+
+### CONFIRMED CASES
+
+```{r}
+valueBox(confirm)
+```
+
+### CURED CASES
+
+```{r}
+valueBox(cur)
+```
+
+### DEATH CASES
+
+```{r}
+valueBox(dt)
+```
+
+ggplot(data = ci, aes(x = states, y = confirmed)) +
+  geom_bar(stat = "identity", fill = "blue")+coord_flip()+
+     labs(x = "States",
+       y = "Confirmed",
+       title = "Comparing Confirmed cases")
+ggplot(data = ci, aes(x = states, y = death)) +
+  geom_bar(stat = "identity", fill = "red")+coord_flip()+
+  labs(x = "States",
+       y = "Death",
+       title = "Comparing Death cases")
+
+covidind<-read.csv("coronaIndia.csv")
+covidind$confirmed<-as.numeric(covidind$confirmed)
+covidind$cured<-as.numeric(covidind$cured)
+covidind$death<-as.numeric(covidind$death)
+
+states_shape = readShapeSpatial("IND_adm1.shp")
+
+class(states_shape)
+print(states_shape$ID_1)
+print(states_shape$NAME_1)
+
+plot(states_shape)
+score <- covidind$confirmed
+State_data = data.frame(id=states_shape$ID_1, NAME_1=states_shape$NAME_1, score)
+fortify_shape = fortify(states_shape, region = "ID_1")
+
+Merged_data = merge(fortify_shape, State_data, by="id", all.x=TRUE)
+
+Map_plot = Merged_data[order(Merged_data$order), ]
